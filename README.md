@@ -4,7 +4,7 @@ Created by HawaiizFynest
 
 > A cybersecurity education simulation — learn real attack techniques through immersive gameplay.
 
-![Build Status](https://github.com/YOUR_USERNAME/nexus-zero-day/actions/workflows/build.yml/badge.svg)
+![Build Status](https://github.com/hawaiizfynest/nexus-zero-day/actions/workflows/build.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-green)
