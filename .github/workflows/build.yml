@@ -1,0 +1,159 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'          # Trigger on version tags: v1.0, v1.1, etc.
+  workflow_dispatch:  # Also allow manual trigger from GitHub Actions tab
+
+permissions:
+  contents: write   # Needed to create releases
+
+jobs:
+  # ── Windows .exe build ────────────────────────────────────────────────────
+  build-windows:
+    name: Build Windows Executable
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build executable
+        run: pyinstaller nexus.spec
+
+      - name: Verify build output
+        run: |
+          if (!(Test-Path "dist/NEXUS_ZeroDay.exe")) {
+            Write-Error "Build failed — exe not found"
+            exit 1
+          }
+          $size = (Get-Item "dist/NEXUS_ZeroDay.exe").length / 1MB
+          Write-Host "Build successful: NEXUS_ZeroDay.exe ($([math]::Round($size,1)) MB)"
+
+      - name: Upload exe as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NEXUS_ZeroDay_Windows
+          path: dist/NEXUS_ZeroDay.exe
+          retention-days: 30
+
+  # ── macOS build (optional — produces a .app bundle) ───────────────────────
+  build-macos:
+    name: Build macOS App
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          brew install python-tk@3.11 || true
+          pip install pyinstaller
+
+      - name: Build app bundle
+        run: |
+          pyinstaller \
+            --onefile \
+            --windowed \
+            --name "NEXUS_ZeroDay" \
+            --add-data "game:game" \
+            nexus.py
+
+      - name: Zip the app
+        run: |
+          cd dist
+          zip -r NEXUS_ZeroDay_macOS.zip NEXUS_ZeroDay
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NEXUS_ZeroDay_macOS
+          path: dist/NEXUS_ZeroDay_macOS.zip
+          retention-days: 30
+
+  # ── Create GitHub Release with all builds attached ────────────────────────
+  release:
+    name: Create GitHub Release
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Windows build
+        uses: actions/download-artifact@v4
+        with:
+          name: NEXUS_ZeroDay_Windows
+          path: release/
+
+      - name: Download macOS build
+        uses: actions/download-artifact@v4
+        with:
+          name: NEXUS_ZeroDay_macOS
+          path: release/
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.VERSION }}
+          name: "NEXUS: Zero Day — ${{ steps.version.outputs.VERSION }}"
+          draft: false
+          prerelease: false
+          body: |
+            ## NEXUS: Zero Day — ${{ steps.version.outputs.VERSION }}
+
+            A cybersecurity education simulation. Investigate PROJECT LAZARUS,
+            learn real attack techniques, and stop OmniCorp's internet kill-switch.
+
+            ---
+
+            ### Downloads
+
+            | Platform | File | Notes |
+            |----------|------|-------|
+            | **Windows** | `NEXUS_ZeroDay.exe` | Single file — no install needed |
+            | **macOS** | `NEXUS_ZeroDay_macOS.zip` | Unzip and run |
+            | **Linux** | Run from source | See README |
+
+            ### Running from source (all platforms)
+            ```bash
+            # Requires Python 3.8+ with tkinter
+            python3 nexus.py
+            ```
+
+            ---
+
+            ### What's in this release
+            - Full 4-chapter story with 12 missions
+            - 3 interactive minigames
+            - 12 Codex cybersecurity education entries
+            - Save/load system (3 slots)
+            - In-game help system
+            - Fullscreen support (F11)
+
+            ---
+            *Educational simulation — no real systems are targeted.*
+          files: |
+            release/NEXUS_ZeroDay.exe
+            release/NEXUS_ZeroDay_macOS.zip
