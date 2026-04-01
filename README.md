@@ -18,6 +18,8 @@ Veteran hacker **Vera Kaine** (ex-NSA, Tailored Access Operations) has recruited
 
 NEXUS: Zero Day is a desktop hacking simulation inspired by *Uplink*. Every mission teaches a real cybersecurity technique — from port scanning and SQL injection to malware reverse engineering and zero-day exploits. The Codex explains the science behind each attack, how defenders detect it, and a real-world breach case study.
 
+Ebook coming soon!
+
 ---
 
 ## Features
