@@ -224,7 +224,7 @@ MIT — see [LICENSE](LICENSE)
 
 ---
 
-GLOSSARY:
+### GLOSSARY:
 Key terms for readers new to cybersecurity
 
 ## 0-Day / Zero-Day
