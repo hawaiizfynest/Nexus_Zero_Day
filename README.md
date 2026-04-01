@@ -147,8 +147,6 @@ python -m PyInstaller nexus.spec
 # Output: dist/NEXUS_ZeroDay.exe
 ```
 
-Or push a version tag and GitHub Actions builds it automatically:
-
 ---
 
 ## Project Structure
