@@ -533,6 +533,80 @@ MISSIONS = [
         },
     },
 
+    {
+        "id": "m09b",
+        "chapter": "ch3",
+        "title": "Ghost in the Binary",
+        "target_id": "omnicorp-malware-sandbox",
+        "briefing": (
+            "KAI: 'Okay. So. While I was pulling data from the OmniCorp DB server, "
+            "I found something that was not on the menu. A file called svchost32.exe "
+            "sitting in a directory it absolutely should not be in.\n\n"
+            "That is not a typo — svchost32, not svchost. Classic masquerading. "
+            "Someone deployed a custom malware implant on OmniCorp\'s own infrastructure. "
+            "Either Voss\'s team is monitoring their own network with custom tooling, "
+            "or someone ELSE is already inside OmniCorp and we are not the only ones "
+            "who found LAZARUS.\n\n"
+            "I need you to get me a copy of that binary. Static analysis first — strings, "
+            "imports, PE headers. We need to know what this thing is before we go deeper.'"
+        ),
+        "objective": "Extract the unknown binary and perform static malware analysis",
+        "steps": ["file_extract", "static_analysis", "string_dump", "ioc_extract"],
+        "reward_credits": 3500,
+        "reward_rep": 42,
+        "reward_item": "malware_sample_raw",
+        "difficulty": "hard",
+        "edu_topic": "malware_static_analysis",
+        "completion_dialog": {
+            "speaker": "ally",
+            "text": (
+                "Static analysis — examining a binary without running it — is the safest "
+                "first step in malware analysis. The strings tool extracted readable text: "
+                "C2 URLs, registry keys, error messages, and a mutex named lazarus_active_v4. "
+                "PE header analysis revealed high section entropy, meaning the payload is packed. "
+                "The import table shows VirtualAlloc, WriteProcessMemory, CreateRemoteThread — "
+                "the classic triad for process injection. This is OmniCorp\'s own implant. "
+                "Voss was spying on his own executives."
+            ),
+        },
+    },
+    {
+        "id": "m09c",
+        "chapter": "ch3",
+        "title": "Running the Specimen",
+        "target_id": "nexus-analysis-sandbox",
+        "briefing": (
+            "KAI: 'Static analysis gave us the skeleton. Now I want to watch it breathe.\n\n"
+            "Dynamic analysis — we detonate the sample in a controlled sandbox and observe "
+            "exactly what it does at runtime. What processes it spawns. What registry keys "
+            "it writes. What it phones home to. Whether it drops additional payloads.\n\n"
+            "I\'ve built an isolated VM mimicking an OmniCorp workstation — same OS, hostname "
+            "format, installed software. The malware should behave normally.\n\n"
+            "VERA: \'If it has VM detection and phones home, Voss will know we have a copy.\'\n\n"
+            "KAI: \'Already patched. Disabled CPUID hypervisor bit, spoofed disk serial, "
+            "removed VMware registry keys. It thinks it\'s running on bare metal.\'"
+        ),
+        "objective": "Execute controlled dynamic analysis — capture behaviour, network IOCs, and dropped payload",
+        "steps": ["sandbox_prep", "detonate", "behaviour_log", "network_capture", "report_iocs"],
+        "reward_credits": 4500,
+        "reward_rep": 48,
+        "reward_item": "malware_ioc_report",
+        "difficulty": "hard",
+        "edu_topic": "malware_dynamic_analysis",
+        "completion_dialog": {
+            "speaker": "ally",
+            "text": (
+                "Dynamic analysis reveals what static analysis can\'t — runtime behaviour. "
+                "The sample spawned a child process, wrote four registry run keys for persistence, "
+                "and beaconed to three IPs at 60-second intervals over HTTPS with a custom "
+                "User-Agent. It checked for specific mutex names before executing — a common "
+                "anti-sandbox technique. The dropped payload is a keylogger targeting credential "
+                "fields in Chrome and Firefox. Voss wasn\'t just building LAZARUS. He was "
+                "harvesting credentials from his own staff. Priya is going to have a field day."
+            ),
+        },
+    },
+
     # ── CHAPTER 4 ──
     {
         "id": "m10",
@@ -1224,6 +1298,154 @@ EDU_CONTENT = {
         "real_world": "In 2017, Google caught Symantec (a major CA) mis-issuing certificates. Symantec's CA business was eventually distrusted by all major browsers and transferred to DigiCert.",
         "tools": ["openssl", "crt.sh (CT transparency)", "ssllabs.com (cert audit)"],
     },
+    "malware_static_analysis": {
+        "title": "Malware Reverse Engineering — Static Analysis",
+        "tldr": "Dissecting a malicious binary without executing it.",
+        "sections": [
+            {
+                "heading": "What is Static Analysis?",
+                "body": (
+                    "Static analysis examines a binary's code and structure without running it. "
+                    "It is the safest first step — the malware cannot phone home, encrypt files, "
+                    "or detect that it's being studied.\n\n"
+                    "The goal is to understand: what is this file? What can it do? "
+                    "Where does it connect? What does it leave behind?"
+                ),
+            },
+            {
+                "heading": "Strings Extraction",
+                "body": (
+                    "The strings command (or Sysinternals Strings on Windows) extracts all "
+                    "readable ASCII and Unicode text embedded in a binary:\n\n"
+                    "What you find: C2 URLs, IP addresses, registry keys the malware touches, "
+                    "error messages written by the author, mutex names, hardcoded credentials, "
+                    "file paths, and API function names.\n\n"
+                    "Even obfuscated malware often has readable strings — the decryption "
+                    "routine itself may contain useful indicators."
+                ),
+            },
+            {
+                "heading": "PE Header Analysis",
+                "body": (
+                    "Windows executables (.exe, .dll) follow the Portable Executable (PE) format. "
+                    "The header contains a rich intelligence source:\n\n"
+                    "Import Address Table (IAT): lists every Windows API the binary calls. "
+                    "VirtualAlloc + WriteProcessMemory + CreateRemoteThread = process injection. "
+                    "CryptEncrypt + InternetOpenUrl = encrypted C2 communication.\n\n"
+                    "Compilation timestamp: when the binary was built (can be faked, but often isn't).\n\n"
+                    "Section entropy: the .text section normally has entropy around 5–6. "
+                    "Entropy near 8 means the code is packed or encrypted — a strong malware signal.\n\n"
+                    "Tools: PE-bear, pestudio, Detect-It-Easy (DIE), CFF Explorer."
+                ),
+            },
+            {
+                "heading": "YARA Rules",
+                "body": (
+                    "YARA is a pattern-matching language for malware identification. "
+                    "Once you identify unique byte sequences, strings, or API combinations, "
+                    "you write a YARA rule that can scan thousands of files for the same family:\n\n"
+                    "rule LazarusImplant {\n"
+                    "  strings:\n"
+                    "    $mutex = \"lazarus_active_v4\"\n"
+                    "    $ua = \"Mozilla/4.0 (OmniCDN)\"\n"
+                    "  condition: all of them\n"
+                    "}\n\n"
+                    "Sharing YARA rules through platforms like VirusTotal and MISP lets the "
+                    "entire security community hunt the same threat simultaneously."
+                ),
+            },
+            {
+                "heading": "Defence",
+                "body": (
+                    "Indicators of Compromise (IOCs) extracted from static analysis — hashes, "
+                    "URLs, mutex names, registry keys — are fed into:\n\n"
+                    "SIEM (Security Information and Event Management): alerts if any host "
+                    "touches a known-bad IOC.\n\n"
+                    "EDR (Endpoint Detection and Response): blocks execution of files matching "
+                    "known hashes or behavioural patterns.\n\n"
+                    "Threat intelligence platforms (MISP, OpenCTI): share IOCs across "
+                    "organisations so one victim's analysis protects everyone."
+                ),
+            },
+        ],
+        "real_world": "The 2020 SolarWinds SUNBURST backdoor was identified partly through static analysis — researchers spotted an unusual dormancy timer (14 days before activation) and obfuscated class names that matched known Turla/APT29 tooling patterns.",
+        "tools": ["strings", "pestudio", "PE-bear", "Detect-It-Easy", "YARA", "Ghidra (free NSA disassembler)", "IDA Pro"],
+    },
+
+    "malware_dynamic_analysis": {
+        "title": "Malware Reverse Engineering — Dynamic Analysis",
+        "tldr": "Executing malware in a controlled environment to observe its runtime behaviour.",
+        "sections": [
+            {
+                "heading": "What is Dynamic Analysis?",
+                "body": (
+                    "Dynamic analysis executes the malware in a sandboxed, monitored environment "
+                    "and records everything it does — file writes, registry changes, network "
+                    "connections, process creation, and API calls.\n\n"
+                    "It reveals what static analysis cannot: runtime-decrypted strings, "
+                    "dropped payloads, actual C2 traffic, and anti-analysis behaviours."
+                ),
+            },
+            {
+                "heading": "Sandbox Environments",
+                "body": (
+                    "A sandbox is an isolated VM designed to safely detonate malware:\n\n"
+                    "Automated sandboxes (Cuckoo, Any.run, Hybrid Analysis): submit a file, "
+                    "get a full behaviour report in minutes. Used for triage.\n\n"
+                    "Manual analysis: analyst controls the environment, can interact, pause, "
+                    "and probe deeper. Used for advanced threats.\n\n"
+                    "Environment spoofing: sophisticated malware checks for virtualisation "
+                    "(CPUID hypervisor bit, registry keys like HKLM\\SOFTWARE\\VMware Inc., "
+                    "disk serial numbers, running processes like vmtoolsd.exe). "
+                    "Analysts counter this by patching these checks or using bare-metal sandboxes."
+                ),
+            },
+            {
+                "heading": "What to Monitor",
+                "body": (
+                    "Process Monitor (ProcMon): every file system and registry operation, "
+                    "every process and thread created — with timestamps and call stacks.\n\n"
+                    "Wireshark / Fiddler: capture all network traffic. Look for beaconing "
+                    "patterns, unusual User-Agent strings, DNS queries to DGA domains.\n\n"
+                    "API Monitor: intercept every Windows API call. VirtualAlloc calls with "
+                    "executable permissions, WriteProcessMemory, and CreateRemoteThread "
+                    "together = code injection in progress.\n\n"
+                    "Regshot: snapshot the registry before and after execution to see "
+                    "every key added, modified, or deleted."
+                ),
+            },
+            {
+                "heading": "Indicators of Compromise (IOCs)",
+                "body": (
+                    "Dynamic analysis produces actionable IOCs:\n\n"
+                    "Network IOCs: C2 IP addresses, domain names, URL patterns, "
+                    "custom HTTP headers or User-Agent strings.\n\n"
+                    "Host IOCs: file paths and names of dropped files, registry run keys "
+                    "for persistence, mutex names (which prevent double-execution), "
+                    "scheduled tasks created.\n\n"
+                    "Behavioural IOCs: process hollowing, credential dumping via LSASS "
+                    "access, unusual parent-child process relationships "
+                    "(e.g. Word spawning PowerShell)."
+                ),
+            },
+            {
+                "heading": "Disassembly and Decompilation",
+                "body": (
+                    "For deeper understanding, analysts disassemble the binary into "
+                    "assembly language (Ghidra, IDA Pro, Binary Ninja) or decompile "
+                    "it to approximate C code.\n\n"
+                    "This reveals: encryption algorithms and keys, custom protocol structures, "
+                    "logic for selecting targets, and code reuse from known malware families — "
+                    "which can attribute the attack to a specific threat actor.\n\n"
+                    "Code similarity tools like BinDiff compare two binaries at the function "
+                    "level, identifying shared code even after recompilation."
+                ),
+            },
+        ],
+        "real_world": "The Emotet banking trojan was analysed dynamically to reveal its modular architecture — the core loader downloaded additional payloads (TrickBot, Ryuk ransomware). This analysis allowed defenders to sinkhole C2 infrastructure and Europol eventually took it down in 2021 using the malware's own update mechanism to push an uninstaller.",
+        "tools": ["Cuckoo Sandbox", "Any.run", "Process Monitor", "Wireshark", "API Monitor", "Regshot", "Ghidra", "x64dbg"],
+    },
+
 }
 
 # ─────────────────────────────────────────────
@@ -1399,6 +1621,34 @@ TARGETS = {
         "data": {"dead_mans_trigger": "Automatic LAZARUS trigger if Voss goes offline"},
         "lore": "Voss's insurance policy. If he's taken offline, this fires LAZARUS automatically. We own the CA that issued its certificate.",
     },
+    "omnicorp-malware-sandbox": {
+        "name": "OMNICORP-DB-PRIMARY",
+        "ip": "172.16.20.5",
+        "type": "DB",
+        "org": "OmniCorp Core Infrastructure",
+        "os": "RHEL 8.5 (compromised host)",
+        "ports": [22, 5432],
+        "sec_level": 3,
+        "sec_label": "HIGH",
+        "services": {22: "OpenSSH 8.0p1", 5432: "PostgreSQL 14.1"},
+        "vulns": ["Unknown binary svchost32.exe in /tmp/.sys/", "Unsigned kernel module loaded"],
+        "data": {"malware_sample": "svchost32.exe (42KB, high entropy)", "malware_strings": "3 C2 URLs, mutex: lazarus_active_v4"},
+        "lore": "Already owned via rootkit. Kai spotted an unknown binary during data extraction. Someone else is in here too.",
+    },
+    "nexus-analysis-sandbox": {
+        "name": "NEXUS-SANDBOX-VM",
+        "ip": "10.99.0.5 (NEXUS internal)",
+        "type": "LAB",
+        "org": "NEXUS Infrastructure",
+        "os": "Windows 10 Pro (spoofed OmniCorp workstation)",
+        "ports": [22, 3389, 4444],
+        "sec_level": 1,
+        "sec_label": "LAB",
+        "services": {22: "OpenSSH 8.9", 3389: "RDP (analysis only)", 4444: "Cuckoo agent"},
+        "vulns": ["Intentionally permissive — isolated analysis environment"],
+        "data": {"behaviour_log": "Full ProcMon + network capture", "dropped_payload": "keylogger_chrome.dll", "ioc_report": "14 network IOCs, 7 host IOCs, 3 YARA rules"},
+        "lore": "Kai's custom analysis sandbox. CPUID patched, VMware registry keys removed, disk serial spoofed. The malware thinks it's on a real OmniCorp machine.",
+    },
 }
 
 # ─────────────────────────────────────────────
@@ -1482,6 +1732,28 @@ ITEMS = {
         "type": "evidence",
         "effect": {"story_progress": True},
         "icon": "🔑",
+    },
+
+    "malware_sample_raw": {
+        "name": "Malware Sample: svchost32.exe",
+        "desc": "Raw binary extracted from OmniCorp DB server. High entropy — likely packed. Kai needs this for analysis.",
+        "type": "evidence",
+        "effect": {"story_progress": True},
+        "icon": "🦠",
+    },
+    "malware_ioc_report": {
+        "name": "IOC Report: LazarusImplant",
+        "desc": "14 network IOCs, 7 host IOCs, 3 YARA rules. Proves OmniCorp deployed malware against its own executives.",
+        "type": "evidence",
+        "effect": {"story_progress": True, "trace_multiplier": 0.85},
+        "icon": "📊",
+    },
+    "reverse_eng_toolkit": {
+        "name": "Reverse Engineering Toolkit",
+        "desc": "Ghidra scripts + custom YARA rules tuned for OmniCorp malware families. +30% on analysis exploits.",
+        "type": "tool",
+        "effect": {"analysis_bonus": 30},
+        "icon": "🔬",
     },
     "relay_disabled": {
         "name": "Dead Man's Switch: DISABLED",

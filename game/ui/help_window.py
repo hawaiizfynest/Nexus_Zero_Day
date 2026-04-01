@@ -298,6 +298,8 @@ SECTIONS = {
         ("  Ch4  Zero-Day Vulnerabilities", "text_dim", None),
         ("  Ch4  Race Conditions & Timing Attacks", "text_dim", None),
         ("  Ch4  PKI & Certificate Trust", "text_dim", None),
+        ("  Ch3  Malware RE — Static Analysis", "text_dim", None),
+        ("  Ch3  Malware RE — Dynamic Analysis", "text_dim", None),
         ("", None, None),
         ("── THE STORY ───────────────────────────────────────────────────────────", "green", None),
         ("", None, None),

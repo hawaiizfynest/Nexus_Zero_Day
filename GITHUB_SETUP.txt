@@ -1,0 +1,170 @@
+NEXUS: Zero Day — GitHub Desktop Setup Guide
+============================================
+
+This guide walks you through publishing the game using GitHub Desktop
+and getting GitHub to automatically build the .exe for you.
+
+
+═══════════════════════════════════════════════════════════════
+PART 1 — PUBLISH TO GITHUB USING GITHUB DESKTOP
+═══════════════════════════════════════════════════════════════
+
+STEP 1 — Install GitHub Desktop (if not already)
+  Download from: https://desktop.github.com
+
+STEP 2 — Open the nexus_game folder as a repository
+  1. Open GitHub Desktop
+  2. Click File → Add Local Repository
+  3. Browse to and select the nexus_game folder
+  4. GitHub Desktop will say "This folder does not appear to be a
+     Git repository" — click "create a repository" in the message
+  5. Fill in:
+       Name:        nexus-zero-day
+       Description: A cybersecurity education simulation
+       Local path:  (already set to nexus_game folder)
+       ☑ Initialize this repository with a README  ← UNTICK THIS
+         (you already have a README)
+  6. Click "Create Repository"
+
+STEP 3 — Update your username in README.md
+  Open README.md in any text editor and replace both instances of:
+    YOUR_USERNAME
+  with your actual GitHub username. Save the file.
+
+STEP 4 — Commit your files
+  Back in GitHub Desktop, you will see all the game files listed
+  on the left under "Changes".
+  1. At the bottom left, in the "Summary" box type:
+       Initial release: NEXUS Zero Day v1.0
+  2. Click "Commit to main"
+
+STEP 5 — Publish to GitHub
+  1. Click "Publish repository" in the top bar
+  2. Make sure "Keep this code private" is UNTICKED
+     (needs to be public for free release downloads)
+  3. Click "Publish Repository"
+
+Your code is now live at:
+  https://github.com/YOUR_USERNAME/nexus-zero-day
+
+
+═══════════════════════════════════════════════════════════════
+PART 2 — TRIGGER THE AUTOMATIC .EXE BUILD
+═══════════════════════════════════════════════════════════════
+
+The build system is already configured in:
+  .github/workflows/build.yml
+
+It runs automatically when you push a "version tag". Here is how
+to create one using GitHub Desktop:
+
+STEP 1 — Open the repository in your terminal
+  In GitHub Desktop: Repository → Open in Terminal
+  (or Repository → Open in Command Prompt on Windows)
+
+STEP 2 — Create and push the version tag
+  Type these two commands:
+
+    git tag v1.0
+    git push origin v1.0
+
+  That's all. Close the terminal.
+
+STEP 3 — Watch the build
+  Go to your repo on GitHub:
+    https://github.com/YOUR_USERNAME/nexus-zero-day/actions
+
+  You'll see a workflow called "Build & Release" running.
+  It takes about 5–10 minutes.
+
+STEP 4 — Download your .exe
+  Once the build has a green tick, go to:
+    https://github.com/YOUR_USERNAME/nexus-zero-day/releases
+
+  Your release will be there with:
+    NEXUS_ZeroDay.exe         Windows — double-click, no install needed
+    NEXUS_ZeroDay_macOS.zip   macOS
+
+  Share this releases page link with anyone who wants to play.
+
+
+═══════════════════════════════════════════════════════════════
+PART 3 — MAKING FUTURE UPDATES
+═══════════════════════════════════════════════════════════════
+
+Whenever you change something in the game:
+
+  1. GitHub Desktop will show the changed files automatically
+  2. Type a summary at the bottom left (e.g. "Fix mission panel width")
+  3. Click "Commit to main"
+  4. Click "Push origin" in the top bar
+
+To release a new .exe version:
+  Repository → Open in Terminal, then:
+
+    git tag v1.1
+    git push origin v1.1
+
+  GitHub builds and releases it automatically.
+
+
+═══════════════════════════════════════════════════════════════
+TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════
+
+"This folder is not a Git repository" when adding
+  Click "create a repository" in the prompt GitHub Desktop shows.
+  Do NOT tick "Initialize with README".
+
+Build fails in GitHub Actions
+  Go to Actions tab → click the failed run → click the failed step
+  to read the error. Most common fix: in .github/workflows/build.yml
+  change python-version from '3.11' to '3.10' and push again.
+
+.exe shows antivirus warning on Windows
+  This is normal for unsigned PyInstaller executables — false positive.
+  Players click "More info" → "Run anyway" in the Windows SmartScreen
+  popup. It only appears the first time.
+
+macOS says "app can't be opened — unidentified developer"
+  Right-click the app → Open → Open in the dialog. One time only.
+
+Can't find the Terminal option in GitHub Desktop
+  Windows: Repository menu → Open in Command Prompt
+  macOS:   Repository menu → Open in Terminal
+
+
+═══════════════════════════════════════════════════════════════
+FIXING: 'pyinstaller' is not recognized
+═══════════════════════════════════════════════════════════════
+
+This happens because Python's Scripts folder is not in your PATH.
+You have two options — pick whichever is easier.
+
+OPTION A — Run PyInstaller via Python directly (easiest fix)
+  First make sure you are inside the nexus_game folder:
+    cd nexus_game
+
+  Then run:
+    python -m PyInstaller nexus.spec
+
+  This always works regardless of PATH settings.
+  The finished .exe will appear in: nexus_game\dist\NEXUS_ZeroDay.exe
+
+
+OPTION B — Fix your PATH permanently
+  1. Press Windows key, search for "Edit the system environment variables"
+  2. Click "Environment Variables"
+  3. Under "User variables", select "Path" and click Edit
+  4. Click "New" and add this path (adjust username):
+       C:\Users\YOUR_WINDOWS_USERNAME\AppData\Local\Programs\Python\Python311\Scripts
+     Or if you installed for all users:
+       C:\Program Files\Python311\Scripts
+  5. Click OK on all dialogs
+  6. Close and reopen your terminal — pyinstaller will now work
+
+
+FINDING YOUR SCRIPTS FOLDER (if the path above is wrong)
+  Run this in your terminal to find the exact path:
+    python -c "import sysconfig; print(sysconfig.get_path('scripts'))"
+  Copy that output and add it to PATH as shown in Option B.

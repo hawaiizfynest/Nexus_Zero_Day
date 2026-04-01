@@ -329,6 +329,16 @@ class GameEngine:
             "forge_cert":  [0.90, 0.85, 0.75, 0.60, 0.40],
             "relay_auth":  [0.85, 0.80, 0.70, 0.55, 0.35],
             "relay_disable":[0.90, 0.85, 0.75, 0.60, 0.40],
+            # Malware analysis — defensive, higher base success rates
+            "file_extract":     [0.90, 0.85, 0.75, 0.60, 0.40],
+            "static_analysis":  [0.95, 0.90, 0.85, 0.75, 0.60],
+            "string_dump":      [0.95, 0.92, 0.88, 0.80, 0.65],
+            "ioc_extract":      [0.90, 0.85, 0.80, 0.70, 0.55],
+            "sandbox_prep":     [0.95, 0.90, 0.85, 0.75, 0.60],
+            "detonate":         [0.90, 0.85, 0.80, 0.70, 0.55],
+            "behaviour_log":    [0.95, 0.90, 0.85, 0.78, 0.65],
+            "network_capture":  [0.95, 0.92, 0.88, 0.80, 0.65],
+            "report_iocs":      [0.95, 0.92, 0.90, 0.85, 0.75],
             "shellcode":   [0.80, 0.70, 0.55, 0.35, 0.15],
             "token_extract":[0.85, 0.75, 0.60, 0.40, 0.20],
         }

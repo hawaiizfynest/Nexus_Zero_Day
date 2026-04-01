@@ -266,6 +266,8 @@ class MainWindow:
             ("PHISHING",     "craft_phish"),
             ("BOUNCE",       "bounce"),
             ("LOG WIPE",     "log_wipe"),
+            ("STATIC ANALY", "static_analysis"),
+            ("DYNAMIC ANALY","detonate"),
         ]
         self.tool_buttons = {}
         for i, (label, tid) in enumerate(tools):

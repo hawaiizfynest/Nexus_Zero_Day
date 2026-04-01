@@ -48,6 +48,16 @@ class MinigameController:
         "relay_disable":    "firewall_bypass",
         "token_extract":    "port_mapper",
         "verify_hidden":    "port_mapper",
+        # Malware analysis exploits
+        "file_extract":     "port_mapper",
+        "static_analysis":  "cipher_decoder",
+        "string_dump":      "cipher_decoder",
+        "ioc_extract":      "cipher_decoder",
+        "sandbox_prep":     "firewall_bypass",
+        "detonate":         "firewall_bypass",
+        "behaviour_log":    "port_mapper",
+        "network_capture":  "port_mapper",
+        "report_iocs":      "cipher_decoder",
     }
 
     def get_game_type(self, exploit_id: str) -> str:
