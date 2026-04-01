@@ -157,7 +157,6 @@ nexus-zero-day/
 ├── nexus.spec                  PyInstaller build configuration
 ├── LAUNCH_NEXUS.bat            Windows launcher (source runs)
 ├── launch_nexus.sh             macOS / Linux launcher
-├── GITHUB_SETUP.txt            Step-by-step GitHub Desktop publish guide
 ├── .github/
 │   └── workflows/
 │       └── build.yml           Auto-build Windows + macOS exe on tag push
@@ -207,6 +206,7 @@ Good areas to contribute:
 - Linux AppImage packaging
 - Accessibility improvements (font scaling, high-contrast mode)
 - Additional Codex topics
+- New Game Ideas
 
 ---
 
