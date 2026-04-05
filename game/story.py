@@ -193,6 +193,29 @@ CHAPTERS = [
         ),
     },
     {
+        "id": "ch5",
+        "title": "CHAPTER 5 — The Reckoning",
+        "subtitle": "The hunted become the hunters",
+        "unlock_rep": 175,
+        "intro": (
+            "Three days after Priya published.\n\n"
+            "Forty-seven indictments. OmniCorp's stock price down sixty-one percent. "
+            "The board has dissolved the Cyber Sovereignty Division. Voss is gone.\n\n"
+            "You thought it was over.\n\n"
+            "ARIA's alert comes in at 04:19 — the same time you triggered the zero-day, "
+            "which is either coincidence or a message. Someone has been in NEXUS "
+            "infrastructure for seventy-two hours without triggering a single alarm. "
+            "Not Obsidian — they disbanded. Not OmniCorp — they're lawyering up. "
+            "Someone new. Someone patient.\n\n"
+            "Kai finds a single file in a NEXUS relay server that shouldn't exist: "
+            "a compressed archive, encrypted, with a filename that is your real name. "
+            "Not your handle. Not gh0st.\n\n"
+            "Alex Ryder.\n\n"
+            "Vera: 'Voss didn't run because he was scared. He ran because he had "
+            "somewhere to go. And now he knows exactly who we are.'"
+        ),
+    },
+    {
         "id": "epilogue",
         "title": "EPILOGUE — Daylight",
         "subtitle": "What comes after",
@@ -202,10 +225,15 @@ CHAPTERS = [
             "Forty-seven OmniCorp executives were indicted within a month. "
             "PROJECT LAZARUS was dismantled by a joint international taskforce "
             "that used NEXUS's own network diagrams as their roadmap.\n\n"
-            "Voss disappeared before the arrests. Interpol has an open warrant.\n\n"
+            "Voss was found. Not by Interpol — by NEXUS. The archive he left in your "
+            "relay server was a mistake. He was careful, but not careful enough. "
+            "The metadata trail led to a private hosting facility in Tallinn. "
+            "Priya gave the coordinates to Interpol directly. The arrest made "
+            "the front page in fourteen countries.\n\n"
             "NEXUS still exists. The threats still exist. But something shifted — "
             "three governments quietly amended their cybersecurity disclosure laws "
-            "because of what you helped expose.\n\n"
+            "because of what you helped expose, and one very specific man is now "
+            "in a cell in the Hague waiting for trial.\n\n"
             "Vera sends one final message:\n"
             "'You asked me once if any of this matters. Look at the news today.\n"
             "— V'"
@@ -416,6 +444,46 @@ MISSIONS = [
                 "project — can exceed 50%. The defence is multi-factor authentication: "
                 "a stolen password alone cannot log in. And security awareness training "
                 "that teaches people to verify links before clicking, even from 'trusted' senders."
+            ),
+        },
+    },
+
+    {
+        "id": "m06b",
+        "chapter": "ch2",
+        "title": "Packet Archaeology",
+        "target_id": "omnicorp-traffic-archive",
+        "briefing": (
+            "PRIYA: 'OmniCorp runs a centralised traffic archive — a long-term packet "
+            "capture system that stores ninety days of internal network logs. Standard "
+            "practice for compliance. Their mistake is that we can reach it through "
+            "the SSO token we lifted from the HR portal.\n\n"
+            "I need three months of traffic logs from the LAZARUS infrastructure segment. "
+            "Not to find a way in — we\'re already in. I need the historical record "
+            "to prove when LAZARUS was built, who built it, and when Voss personally "
+            "authorised activation. A network forensics case that\'ll hold up in court.\n\n"
+            "ARIA will help you sift the capture data. Look for the LAZARUS-ROUTE-ALPHA "
+            "tag, the command node\'s IP, and any authentication events from "
+            "Voss\'s credentials. We need a timeline. Evidence has to be airtight.'"
+        ),
+        "objective": "Perform network forensics on the traffic archive to build the legal case",
+        "steps": ["archive_access", "pcap_filter", "timeline_build", "evidence_package"],
+        "reward_credits": 2200,
+        "reward_rep": 32,
+        "reward_item": "traffic_evidence_pkg",
+        "difficulty": "medium",
+        "edu_topic": "network_forensics",
+        "completion_dialog": {
+            "speaker": "handler",
+            "text": (
+                "Network forensics turns raw packet captures into legal evidence. "
+                "The key is chain of custody — proving the data hasn't been modified "
+                "since capture. Cryptographic hashing (SHA-256) of each PCAP file "
+                "before and after analysis proves integrity. Timestamps in packet "
+                "headers are cross-referenced against NTP server logs to confirm "
+                "accuracy. What we built here isn't just intelligence — it's "
+                "admissible evidence with a verifiable, unbroken chain back to "
+                "OmniCorp's own logging infrastructure."
             ),
         },
     },
@@ -720,6 +788,128 @@ MISSIONS = [
             ),
         },
     },
+    # ── CHAPTER 5 ──
+    {
+        "id": "m13",
+        "chapter": "ch5",
+        "title": "Ghost Signal",
+        "target_id": "nexus-relay-compromised",
+        "briefing": (
+            "ARIA: 'Alert. I\'ve been running anomaly detection on our own relay "
+            "infrastructure since the publications. At 04:19 this morning I found "
+            "a dormant implant in relay-7. It has been present for seventy-two hours. "
+            "It is not NEXUS code. It is not Obsidian code — I have their signatures "
+            "from when we compromised their C2.\n\n"
+            "It\'s something new. Lightweight. Patient. It hasn\'t exfiltrated anything "
+            "yet — it\'s in a reconnaissance phase, mapping our infrastructure.\n\n"
+            "Someone found us through our own publications. The technical metadata "
+            "in Priya\'s evidence package contained relay node signatures that a "
+            "careful analyst could use to locate NEXUS infrastructure.\n\n"
+            "Kai: \'We need to analyse this implant before we remove it. "
+            "If we just wipe it, we lose our best lead on who sent it.\'"
+        ),
+        "objective": "Analyse the unknown implant and trace it back to its origin",
+        "steps": ["implant_capture", "static_analysis", "c2_trace", "origin_id"],
+        "reward_credits": 5500,
+        "reward_rep": 52,
+        "reward_item": "voss_infrastructure_lead",
+        "difficulty": "elite",
+        "edu_topic": "incident_response",
+        "completion_dialog": {
+            "speaker": "ally",
+            "text": (
+                "Incident response follows a defined cycle: Preparation, Identification, "
+                "Containment, Eradication, Recovery, and Lessons Learned. The critical "
+                "mistake most defenders make is jumping straight to Eradication — wiping "
+                "the implant and considering the incident closed. You lose your forensic "
+                "window. The implant\'s C2 communication pattern led us to a hosting "
+                "provider in Tallinn. The certificate on the C2 server was self-signed, "
+                "but its organisational unit field contained a string — VOSS-PERSONAL-INFRA "
+                "— that wasn\'t meant to survive this long."
+            ),
+        },
+    },
+    {
+        "id": "m14",
+        "chapter": "ch5",
+        "title": "The Tallinn Connection",
+        "target_id": "voss-personal-server",
+        "briefing": (
+            "VERA: 'The C2 infrastructure traces to a privately-leased server in Tallinn. "
+            "Not OmniCorp — personal. Leased eighteen months ago under a shell company "
+            "that Priya has traced through four layers of incorporation back to a "
+            "beneficial owner: Harlan Voss.\n\n"
+            "He\'s been running his own operation this entire time. Separate from "
+            "OmniCorp, separate from Obsidian. This infrastructure predates LAZARUS.\n\n"
+            "I need to know what\'s on that server. Not for us — for Interpol. "
+            "We\'ve been building an evidence case for three months. This is the "
+            "final piece: proof that Voss personally directed the post-publication "
+            "counter-intelligence operation against NEXUS.\n\n"
+            "This is the last operation. We get the evidence, we hand it to Priya, "
+            "and then NEXUS goes dark for a while. We\'ve earned it.'"
+        ),
+        "objective": "Penetrate Voss's personal server and extract evidence of his counter-op",
+        "steps": ["recon", "exploit", "evidence_extract", "secure_handoff"],
+        "reward_credits": 8000,
+        "reward_rep": 65,
+        "reward_item": "voss_arrest_evidence",
+        "difficulty": "elite",
+        "edu_topic": "digital_forensics_evidence",
+        "completion_dialog": {
+            "speaker": "handler",
+            "text": (
+                "Digital forensics for legal proceedings requires more than finding "
+                "evidence — it requires proving provenance. Every file extracted must "
+                "be accompanied by: a cryptographic hash proving it hasn\'t been altered, "
+                "a timestamp chain linking it to the server\'s own logs, and documentation "
+                "of every tool and command used in the extraction. We packaged everything "
+                "with a forensic acquisition report following the ACPO guidelines. "
+                "Interpol had an arrest warrant within six hours of receiving Priya\'s "
+                "submission. Voss was detained at Tallinn Airport the following morning."
+            ),
+        },
+    },
+    {
+        "id": "m15",
+        "chapter": "ch5",
+        "title": "Cover Your Tracks",
+        "target_id": "nexus-relay-compromised",
+        "briefing": (
+            "ARIA: 'Before we go dark, we clean our own house.\n\n"
+            "The compromised relay is eradicated — implant removed, logs audited, "
+            "access revoked. But the metadata exposure that led Voss to us in the "
+            "first place needs to be understood and fixed for every future operation.\n\n"
+            "Kai has written an automated OPSEC audit tool that checks all NEXUS "
+            "infrastructure for metadata leakage — file timestamps, relay signatures, "
+            "TLS certificate fingerprints, traffic timing patterns. Anything that "
+            "could allow an analyst to locate us from publicly released data.\n\n"
+            "Run the audit. Apply the remediations. This is the difference between "
+            "NEXUS surviving to the next operation and NEXUS ending here.\n\n"
+            "VERA: \'Operational security isn\'t glamorous. But everyone who got "
+            "caught got caught because of something small they didn\'t bother to fix.\'"
+        ),
+        "objective": "Audit and harden NEXUS operational security across all infrastructure",
+        "steps": ["opsec_audit", "metadata_scrub", "relay_rebuild", "verify_clean"],
+        "reward_credits": 4000,
+        "reward_rep": 45,
+        "reward_item": "nexus_opsec_hardened",
+        "difficulty": "hard",
+        "edu_topic": "operational_security",
+        "completion_dialog": {
+            "speaker": "mentor",
+            "text": (
+                "Operational security — OPSEC — is the practice of protecting information "
+                "that could be used against you. The five-step OPSEC process: identify "
+                "critical information, analyse threats, analyse vulnerabilities, assess "
+                "risk, and apply countermeasures. The metadata leak that exposed NEXUS "
+                "was a file creation timestamp inside a PDF that matched the timezone "
+                "of one of our relay nodes. Fifteen minutes of due diligence before "
+                "publication would have caught it. OPSEC failures are almost always "
+                "small, mundane, and completely avoidable in hindsight."
+            ),
+        },
+    },
+
 ]
 
 # ─────────────────────────────────────────────
@@ -1298,6 +1488,209 @@ EDU_CONTENT = {
         "real_world": "In 2017, Google caught Symantec (a major CA) mis-issuing certificates. Symantec's CA business was eventually distrusted by all major browsers and transferred to DigiCert.",
         "tools": ["openssl", "crt.sh (CT transparency)", "ssllabs.com (cert audit)"],
     },
+
+    "network_forensics": {
+        "title": "Network Forensics",
+        "tldr": "Extracting legal-grade evidence from network traffic captures.",
+        "sections": [
+            {
+                "heading": "What Network Forensics Produces",
+                "body": (
+                    "Network forensics reconstructs events from packet captures (PCAPs). "
+                    "Unlike host forensics — which analyses files and system state — "
+                    "network forensics analyses the communications that happened: "
+                    "who talked to whom, when, what was transferred, and what commands were issued.\n\n"
+                    "In legal proceedings, network forensic evidence is powerful because "
+                    "it is difficult to fabricate after the fact and, when collected "
+                    "from the defender's own infrastructure, has a clear chain of custody."
+                ),
+            },
+            {
+                "heading": "Chain of Custody",
+                "body": (
+                    "For evidence to be admissible in court, its chain of custody must be "
+                    "unbroken: who collected it, when, how, and who has had access since.\n\n"
+                    "For PCAPs: the file is SHA-256 hashed immediately on collection. "
+                    "Every subsequent copy is hashed and compared. Any alteration produces "
+                    "a different hash, proving tampering.\n\n"
+                    "Timestamps in packet headers are cross-referenced against NTP logs "
+                    "to confirm accuracy. The capturing system's own clock is verified "
+                    "against an authoritative time source to make timestamps court-admissible."
+                ),
+            },
+            {
+                "heading": "Key Analysis Techniques",
+                "body": (
+                    "Traffic filtering: isolate specific IPs, ports, or protocols to "
+                    "cut through noise. Tools: Wireshark display filters, BPF capture filters.\n\n"
+                    "Flow reconstruction: reassemble TCP streams to read full sessions — "
+                    "HTTP requests, file transfers, command sequences.\n\n"
+                    "Timeline correlation: match packet timestamps with authentication logs, "
+                    "system events, and access records to build a coherent narrative.\n\n"
+                    "Anomaly detection: statistical analysis of traffic volume, timing, "
+                    "and destinations to identify beaconing or data exfiltration."
+                ),
+            },
+            {
+                "heading": "Defence",
+                "body": (
+                    "Organisations should retain network logs for at least 90 days — "
+                    "often required by compliance frameworks (PCI-DSS, HIPAA, SOC2).\n\n"
+                    "Immutable log storage: logs written to WORM (Write Once Read Many) "
+                    "media or append-only cloud storage cannot be altered by an attacker "
+                    "who compromises the logging system.\n\n"
+                    "Full PCAP is expensive — flow records (NetFlow, sFlow) capture "
+                    "metadata without storing full packet contents, enabling analysis "
+                    "at a fraction of the storage cost."
+                ),
+            },
+        ],
+        "real_world": "The 2013 Target breach was reconstructed almost entirely through network forensics — analysts traced the attackers' lateral movement from an HVAC contractor's credentials to the payment systems over six weeks of PCAPs.",
+        "tools": ["Wireshark", "tcpdump", "NetworkMiner", "Zeek (formerly Bro)", "Moloch/Arkime"],
+    },
+
+    "incident_response": {
+        "title": "Incident Response",
+        "tldr": "The structured process for detecting, containing, and recovering from a security breach.",
+        "sections": [
+            {
+                "heading": "The IR Cycle",
+                "body": (
+                    "Incident Response follows six phases:\n\n"
+                    "1. Preparation: IR plan, runbooks, tooling, trained team. Before the incident.\n"
+                    "2. Identification: Detect the incident. When did it start? What systems are affected?\n"
+                    "3. Containment: Stop the bleeding. Isolate affected systems. Short-term then long-term.\n"
+                    "4. Eradication: Remove the threat. Every implant, every backdoor, every access path.\n"
+                    "5. Recovery: Restore systems to operation. Verify clean. Monitor for recurrence.\n"
+                    "6. Lessons Learned: What happened? How was it missed? What changes prevent recurrence?"
+                ),
+            },
+            {
+                "heading": "The Containment Dilemma",
+                "body": (
+                    "The hardest decision in IR: contain immediately and lose forensic data, "
+                    "or monitor longer to gather intelligence and risk further damage?\n\n"
+                    "Monitoring a live attacker (a 'dwell time' extension) reveals: "
+                    "their full access scope, their tools and TTPs, other compromised systems, "
+                    "and possibly their identity and attribution.\n\n"
+                    "The risk: data exfiltration, lateral movement to new systems, or "
+                    "the attacker detecting the monitoring and destroying evidence.\n\n"
+                    "The answer depends on the incident. Ransomware: contain immediately. "
+                    "APT reconnaissance: controlled observation may be warranted."
+                ),
+            },
+            {
+                "heading": "Indicators of Compromise (IOCs) vs TTPs",
+                "body": (
+                    "IOCs are specific and perishable — an IP address or file hash can be "
+                    "changed overnight. TTPs (Tactics, Techniques, and Procedures) are "
+                    "durable — a threat actor's behavioural patterns persist across campaigns.\n\n"
+                    "The MITRE ATT&CK framework catalogues TTPs observed in real attacks, "
+                    "organised by attack phase. Matching an incident to ATT&CK techniques "
+                    "provides attribution context and predicts what the attacker is likely to do next."
+                ),
+            },
+        ],
+        "real_world": "The 2020 SolarWinds (SUNBURST) incident had a dwell time of 9 months before detection. FireEye discovered it when Mandiant noticed an MFA device registered from an unexpected location — one anomalous event that unravelled a nation-state operation.",
+        "tools": ["Velociraptor", "KAPE", "Volatility (memory forensics)", "MITRE ATT&CK Navigator", "TheHive (case management)"],
+    },
+
+    "digital_forensics_evidence": {
+        "title": "Digital Forensics & Legal Evidence",
+        "tldr": "Collecting digital evidence that survives legal scrutiny.",
+        "sections": [
+            {
+                "heading": "Admissibility Requirements",
+                "body": (
+                    "For digital evidence to be admissible in court it must be:\n\n"
+                    "Authentic: proven to be what it claims to be. Cryptographic hashes "
+                    "(MD5, SHA-256) of collected evidence, verified at every step.\n\n"
+                    "Complete: the full picture, not cherry-picked. Presenting only "
+                    "favourable evidence undermines credibility and can be challenged.\n\n"
+                    "Reliable: collected using sound forensic methods that are "
+                    "reproducible and accepted in the field.\n\n"
+                    "Believable: presented clearly enough for a non-technical judge or jury."
+                ),
+            },
+            {
+                "heading": "Forensic Acquisition",
+                "body": (
+                    "Write blockers: hardware or software devices that allow reading "
+                    "from storage media without modifying it. Accessing a drive without "
+                    "a write blocker changes timestamps and can invalidate evidence.\n\n"
+                    "Bit-for-bit imaging: forensic copies capture every sector, "
+                    "including deleted files, slack space, and unallocated clusters. "
+                    "Tools: dd, FTK Imager, Guymager.\n\n"
+                    "Volatile data: RAM, running processes, and network connections are "
+                    "lost on power-off. Order of volatility — capture most volatile first: "
+                    "RAM, then network state, then disk."
+                ),
+            },
+            {
+                "heading": "Documentation",
+                "body": (
+                    "A forensic acquisition report documents: the date and time of collection, "
+                    "the person who collected it, the tools and versions used, hardware "
+                    "identifiers of the evidence and collection device, hash values "
+                    "before and after, and any anomalies observed.\n\n"
+                    "This report is what a court scrutinises. A technically perfect "
+                    "forensic image is worthless without documentation proving "
+                    "it was collected correctly and hasn't been altered since."
+                ),
+            },
+        ],
+        "real_world": "The prosecution of Silk Road founder Ross Ulbricht relied heavily on forensic evidence — including a laptop seized mid-session while he was logged in, preserving an unencrypted running system. Proper acquisition preserved that volatile state for trial.",
+        "tools": ["FTK Imager", "Autopsy", "dd", "Volatility", "Cellebrite (mobile)"],
+    },
+
+    "operational_security": {
+        "title": "Operational Security (OPSEC)",
+        "tldr": "Protecting information that could be used against you.",
+        "sections": [
+            {
+                "heading": "The Five-Step OPSEC Process",
+                "body": (
+                    "Originally developed by the US military (Operation PURPLE DRAGON, Vietnam), "
+                    "OPSEC is now a standard security framework:\n\n"
+                    "1. Identify critical information: what would hurt you if an adversary knew it?\n"
+                    "2. Analyse threats: who wants this information and what are their capabilities?\n"
+                    "3. Analyse vulnerabilities: how could the adversary obtain it?\n"
+                    "4. Assess risk: likelihood × impact for each vulnerability.\n"
+                    "5. Apply countermeasures: reduce risk to acceptable levels."
+                ),
+            },
+            {
+                "heading": "Metadata — The Silent Leaker",
+                "body": (
+                    "Files contain metadata their creators often don't think about:\n\n"
+                    "Documents: author name, organisation, edit history, software version, "
+                    "creation timestamp (including timezone).\n\n"
+                    "Images: GPS coordinates, device model, timestamp, camera settings.\n\n"
+                    "PDFs: embedded fonts, creation software, producer, creation timezone.\n\n"
+                    "Network traffic: timing patterns, packet sizes, TLS certificate "
+                    "fingerprints, JA3/JA3S signatures that identify the client software.\n\n"
+                    "Tools: ExifTool strips metadata from files. MAT2 is a comprehensive "
+                    "metadata anonymiser. Tails OS routes all traffic through Tor."
+                ),
+            },
+            {
+                "heading": "Common OPSEC Failures",
+                "body": (
+                    "Reusing infrastructure: an IP address used in one operation "
+                    "and then another links both operations to the same actor.\n\n"
+                    "Consistent timing: always working between 09:00-17:00 UTC suggests "
+                    "a specific timezone, narrowing attribution.\n\n"
+                    "Stylometry: writing style is distinctive enough to identify "
+                    "individuals. Ross Ulbricht was partially identified because his "
+                    "forum posts matched those of 'Dread Pirate Roberts'.\n\n"
+                    "Third-party exposure: operational data in a tool, service, or "
+                    "platform controlled by someone else creates an exposure you can't control."
+                ),
+            },
+        ],
+        "real_world": "Hector Monsegur (Sabu), the LulzSec leader, was identified when he connected to IRC without Tor once — one slip after months of careful anonymity. That single event led the FBI directly to him.",
+        "tools": ["ExifTool", "MAT2", "Tails OS", "Tor", "dangerzone (safe document viewing)"],
+    },
     "malware_static_analysis": {
         "title": "Malware Reverse Engineering — Static Analysis",
         "tldr": "Dissecting a malicious binary without executing it.",
@@ -1649,6 +2042,48 @@ TARGETS = {
         "data": {"behaviour_log": "Full ProcMon + network capture", "dropped_payload": "keylogger_chrome.dll", "ioc_report": "14 network IOCs, 7 host IOCs, 3 YARA rules"},
         "lore": "Kai's custom analysis sandbox. CPUID patched, VMware registry keys removed, disk serial spoofed. The malware thinks it's on a real OmniCorp machine.",
     },
+    "omnicorp-traffic-archive": {
+        "name": "OMNICORP-TRAFFIC-ARCHIVE",
+        "ip": "172.16.30.11",
+        "type": "ARCHIVE",
+        "org": "OmniCorp Compliance Infrastructure",
+        "os": "Ubuntu 22.04 LTS",
+        "ports": [22, 443, 9200],
+        "sec_level": 2,
+        "sec_label": "MEDIUM",
+        "services": {22: "OpenSSH 8.9p1", 443: "nginx/1.22.0", 9200: "Elasticsearch 8.6.0"},
+        "vulns": ["SSO token accepted (harvested from HR portal)", "Elasticsearch accessible with valid session"],
+        "data": {"pcap_90day": "90 days of LAZARUS-segment traffic captures", "auth_logs": "Voss credential auth events with timestamps"},
+        "lore": "Compliance logging server. OmniCorp's lawyers will wish they'd encrypted this.",
+    },
+    "nexus-relay-compromised": {
+        "name": "NEXUS-RELAY-07",
+        "ip": "10.99.7.1 (NEXUS internal)",
+        "type": "RELAY",
+        "org": "NEXUS Infrastructure",
+        "os": "Debian 12 (Bookworm)",
+        "ports": [22, 443],
+        "sec_level": 3,
+        "sec_label": "HIGH",
+        "services": {22: "OpenSSH 9.2p1", 443: "nginx/1.22.0 (NEXUS relay)"},
+        "vulns": ["Unknown implant present — dormant, reconnaissance phase", "Metadata leak in published evidence package"],
+        "data": {"implant_binary": "Unknown implant — 8KB, high entropy", "c2_comms": "Encrypted C2 traffic logs"},
+        "lore": "Our own relay. Compromised through metadata we published. Kai is professionally offended.",
+    },
+    "voss-personal-server": {
+        "name": "VOSS-PERSONAL-VPS",
+        "ip": "185.220.101.47 (Tallinn)",
+        "type": "C2",
+        "org": "Shell company (beneficial owner: H. Voss)",
+        "os": "Alpine Linux 3.18",
+        "ports": [22, 443, 8443],
+        "sec_level": 4,
+        "sec_label": "CRITICAL",
+        "services": {22: "OpenSSH 9.3p1 (cert auth only)", 443: "Custom HTTPS (self-signed)", 8443: "C2 management interface"},
+        "vulns": ["Self-signed certificate with identifying organisational unit field", "Operational since 18 months before LAZARUS — predates Obsidian"],
+        "data": {"counter_op_files": "Evidence of post-publication NEXUS targeting", "voss_comms": "Encrypted operator communications", "identity_proof": "Beneficial ownership chain documents"},
+        "lore": "Voss's personal infrastructure. The cert says VOSS-PERSONAL-INFRA. He was careful about everything except this.",
+    },
 }
 
 # ─────────────────────────────────────────────
@@ -1761,5 +2196,33 @@ ITEMS = {
         "type": "evidence",
         "effect": {"story_progress": True},
         "icon": "🔴",
+    },
+    "traffic_evidence_pkg": {
+        "name": "Network Forensics Package",
+        "desc": "90 days of PCAP evidence with SHA-256 hashes, timestamp verification, and Voss auth events. Court-admissible.",
+        "type": "evidence",
+        "effect": {"story_progress": True},
+        "icon": "📦",
+    },
+    "voss_infrastructure_lead": {
+        "name": "Voss Infrastructure Lead",
+        "desc": "C2 certificate identifying VOSS-PERSONAL-INFRA. Points to Tallinn hosting facility.",
+        "type": "intel",
+        "effect": {"story_progress": True},
+        "icon": "📍",
+    },
+    "voss_arrest_evidence": {
+        "name": "Voss Arrest Package",
+        "desc": "Complete forensic evidence of Voss's counter-operation against NEXUS. Sent to Interpol. Arrest warrant issued.",
+        "type": "evidence",
+        "effect": {"story_progress": True},
+        "icon": "⚖️",
+    },
+    "nexus_opsec_hardened": {
+        "name": "NEXUS OPSEC: HARDENED",
+        "desc": "All metadata scrubbed, relay rebuilt, traffic patterns randomised. NEXUS infrastructure is clean.",
+        "type": "upgrade",
+        "effect": {"trace_multiplier": 0.5},
+        "icon": "🛡️",
     },
 }
