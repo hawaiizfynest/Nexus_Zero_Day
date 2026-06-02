@@ -11,6 +11,7 @@ import string
 from datetime import datetime
 from pathlib import Path
 from game.story import CHARACTERS, CHAPTERS, MISSIONS, EDU_CONTENT, TARGETS, ITEMS
+from game.skill_tree import SKILLS, get_effects_for, get_exploit_bonus, can_unlock
 
 
 SAVE_DIR = Path(os.path.expanduser("~")) / "Documents" / "NEXUS_ZeroDay" / "saves"
@@ -41,6 +42,9 @@ class GameState:
         self.terminal_history = []
         self.bouncing = False
         self.bounce_hops = []
+        # ── Skill tree ──
+        self.unlocked_skills = []
+        self.last_trace_decay = time.time()
 
     def to_dict(self):
         return {
@@ -65,6 +69,7 @@ class GameState:
             "terminal_history": self.terminal_history[-50:],
             "bouncing": self.bouncing,
             "bounce_hops": self.bounce_hops,
+            "unlocked_skills": self.unlocked_skills,
         }
 
     @classmethod
@@ -92,6 +97,8 @@ class GameState:
         gs.terminal_history = d.get("terminal_history", [])
         gs.bouncing = d.get("bouncing", False)
         gs.bounce_hops = d.get("bounce_hops", [])
+        gs.unlocked_skills = d.get("unlocked_skills", [])
+        gs.last_trace_decay = time.time()
         return gs
 
 
@@ -231,14 +238,18 @@ class GameEngine:
         self.state.completed_missions.append(mission_id)
         self.state.active_mission_id = None
         self.state.credits += mission["reward_credits"]
-        self.state.rep += mission["reward_rep"]
+        # Apply skill tree REP multiplier
+        rep_effects = get_effects_for(self.state.unlocked_skills)
+        rep_mult = rep_effects.get("rep_per_mission", 1.0)
+        rep_gain = int(mission["reward_rep"] * rep_mult)
+        self.state.rep += rep_gain
 
         if mission.get("reward_item") and mission["reward_item"] not in self.state.inventory:
             self.state.inventory.append(mission["reward_item"])
             item = ITEMS.get(mission["reward_item"], {})
             self.apply_item_effect(mission["reward_item"])
 
-        self.add_log(f"Contract complete: {mission['title']} | +${mission['reward_credits']:,} | +{mission['reward_rep']} REP", "success")
+        self.add_log(f"Contract complete: {mission['title']} | +${mission['reward_credits']:,} | +{rep_gain} REP", "success")
         self.emit("mission_complete", mission)
         self._check_chapter_advance()
 
@@ -366,20 +377,31 @@ class GameEngine:
         if "rop_chain_kit" in self.state.inventory and exploit_id in ("overflow", "shellcode"):
             base_prob = min(0.98, base_prob + 0.30)
 
+        # Skill tree exploit bonuses
+        skill_bonus = get_exploit_bonus(self.state.unlocked_skills, exploit_id)
+        if skill_bonus > 0:
+            base_prob = min(0.98, base_prob + skill_bonus)
+
+        # Skill tree minigame score floor
+        effects = get_effects_for(self.state.unlocked_skills)
+        score_floor = effects.get("minigame_score_floor", 0.0)
+        effective_score = max(minigame_score, score_floor)
+
         # Minigame performance bonus
-        final_prob = min(0.98, base_prob * (0.7 + 0.3 * minigame_score))
+        final_prob = min(0.98, base_prob * (0.7 + 0.3 * effective_score))
 
         roll = random.random()
         success = roll < final_prob
 
-        # Trace
+        # Trace — with skill tree modifiers
         trace_amounts = {0: 0.5, 1: 1.5, 2: 3.0, 3: 5.0, 4: 8.0}
         base_trace = trace_amounts.get(sec, 3.0)
         if not success:
-            base_trace *= 2.0
+            base_trace *= effects.get("trace_failure_mult", 2.0)
         if self.state.bouncing:
-            base_trace *= 0.3
+            base_trace *= effects.get("bounce_trace_mult", 0.3)
         base_trace *= self.state.trace_multiplier
+        base_trace *= effects.get("trace_multiplier", 1.0)
 
         self.state.trace = min(100.0, self.state.trace + base_trace)
 
@@ -515,9 +537,56 @@ class GameEngine:
     def mark_edu_read(self, topic: str):
         if self.state:
             self.state.edu_topics_read.add(topic)
-            # Small rep reward for learning
-            self.state.rep += 2
+            # Small rep reward for learning + skill tree bonus
+            effects = get_effects_for(self.state.unlocked_skills)
+            bonus = effects.get("codex_rep_bonus", 0)
+            self.state.rep += 2 + bonus
             self.emit("state_changed")
+
+    def unlock_skill(self, skill_id: str):
+        """Unlock a skill from the skill tree. Returns (success, message)."""
+        if not self.state:
+            return False, "No active game"
+        ok, reason = can_unlock(skill_id, self.state.unlocked_skills, self.state.rep)
+        if not ok:
+            return False, reason
+
+        skill = SKILLS[skill_id]
+        self.state.rep -= skill["rep_cost"]
+        self.state.unlocked_skills.append(skill_id)
+
+        # Apply one-time effects
+        effect = skill.get("effect", {})
+        credits_grant = effect.get("starting_credits", 0)
+        if credits_grant:
+            self.state.credits += credits_grant
+
+        self.add_log(f"Skill unlocked: {skill['name']} (-{skill['rep_cost']} REP)", "story")
+        self.emit("skill_unlocked", skill_id)
+        self.emit("state_changed")
+        return True, f"Unlocked: {skill['name']}"
+
+    def trace_decay_tick(self):
+        """Apply passive trace decay if the player has Ghost Protocol skill."""
+        if not self.state:
+            return
+        effects = get_effects_for(self.state.unlocked_skills)
+        decay_rate = effects.get("trace_decay_per_min", 0.0)
+        if decay_rate <= 0 or self.state.trace <= 0:
+            return
+        now = time.time()
+        elapsed_min = (now - self.state.last_trace_decay) / 60.0
+        if elapsed_min < 0.1:
+            return
+        decay_amount = decay_rate * elapsed_min
+        self.state.trace = max(0.0, self.state.trace - decay_amount)
+        self.state.last_trace_decay = now
+
+    def get_skill_effects(self):
+        """Return current combined skill effects (for UI)."""
+        if not self.state:
+            return get_effects_for([])
+        return get_effects_for(self.state.unlocked_skills)
 
     def get_chapter_progress(self):
         if not self.state:

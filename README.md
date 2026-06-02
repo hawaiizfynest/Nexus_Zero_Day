@@ -6,7 +6,7 @@
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Version](https://img.shields.io/badge/version-3.0-brightgreen)
+![Version](https://img.shields.io/badge/version-3.1-brightgreen)
 
 ---
 
@@ -30,7 +30,8 @@ NEXUS: Zero Day is a desktop hacking simulation inspired by *Uplink*. Every miss
 | **Techniques** | 18 cybersecurity topics — offensive and defensive |
 | **Minigames** | Port Mapper · Cipher Decoder · Firewall Bypass |
 | **Codex** | 18 in-depth education entries with real-world breach case studies |
-| **Help system** | Tabbed in-game guide — Getting Started, Interface, Walkthrough, Commands, Tips |
+| **Skill Tree** | 20 permanent upgrades across 5 branches — spend REP on real progression |
+| **Help system** | Tabbed in-game guide — Getting Started, Interface, Walkthrough, Commands, Skill Tree, Tips |
 | **Save / Load** | 3 save slots stored in `~/Documents/NEXUS_ZeroDay/saves/` |
 | **Fullscreen** | F11 to toggle, fully responsive layout |
 | **No dependencies** | Pure Python standard library + tkinter — nothing to install |
@@ -182,6 +183,7 @@ nexus_zero_day/
 ├── nexus.spec                  PyInstaller build configuration
 ├── LAUNCH_NEXUS.bat            Windows launcher
 ├── launch_nexus.sh             macOS / Linux launcher
+├── GITHUB_SETUP.txt            GitHub Desktop publish guide
 ├── .github/
 │   └── workflows/
 │       └── build.yml           Auto-build Windows + macOS exe on tag push
@@ -196,6 +198,7 @@ nexus_zero_day/
         ├── dialogue.py         Character transmission popups
         ├── edu_panel.py        Single-topic Codex popup
         ├── codex_window.py     Full Codex browser
+        ├── skill_tree_window.py Visual skill tree UI
         ├── exploit_window.py   Exploit sequence + minigames
         ├── minigame.py         Minigame routing
         └── help_window.py      In-game help system
@@ -204,6 +207,18 @@ nexus_zero_day/
 ---
 
 ## Changelog
+
+### v3.1
+- **Skill Tree progression system** — Spend REP on 20 permanent upgrades across 5 branches:
+  - **RECON** — Reconnaissance and intelligence bonuses
+  - **EXPLOIT** — Offensive operation success rate bonuses
+  - **STEALTH** — Trace reduction, bounce improvements, passive trace decay
+  - **FORENSICS** — Malware analysis and defensive operation bonuses
+  - **RESOURCE** — Credit grants, REP multipliers, minigame timer bonuses
+- New **SKILLS** button in the top bar opens the visual skill tree
+- New help tab explaining the skill tree
+- Skill effects integrated into exploit success rates, trace generation, and REP rewards
+- Skills persist across saves and apply automatically
 
 ### v3.0
 - **New chapter** — Chapter 5: The Reckoning. Voss comes back. NEXUS becomes the target.
@@ -227,6 +242,13 @@ nexus_zero_day/
 pip install pyinstaller
 cd nexus_zero_day
 python -m PyInstaller nexus.spec
+```
+
+Or push a version tag and GitHub builds it automatically:
+
+```bash
+git tag v3.0
+git push origin v3.0
 ```
 
 ---

@@ -145,6 +145,7 @@ class MainWindow:
 
         # Menu buttons
         for lbl, cmd in [("SAVE", self._save_menu), ("LOAD", self._load_menu),
+                          ("SKILLS", self._open_skill_tree),
                           ("CODEX", self._open_codex), ("HELP", self._open_help), ("F11", self._toggle_fullscreen), ("QUIT", self._quit)]:
             tk.Button(bar, text=lbl, bg=C["bg3"], fg=C["text_dim"],
                       font=self.font_small, relief="flat", bd=1,
@@ -1145,6 +1146,9 @@ class MainWindow:
                 if gs.bouncing and gs.trace > 0:
                     gs.trace = max(0.0, gs.trace - 0.1)
                     self._refresh_stats()
+                # Skill tree: Ghost Protocol trace decay
+                self.engine.trace_decay_tick()
+                self._refresh_stats()
             self.root.after(1000, _tick)
         _tick()
 
@@ -1244,6 +1248,13 @@ class MainWindow:
             self.set_status(f"Save loaded — {gs.player_handle}")
         else:
             messagebox.showerror("Error", "Failed to load save.", parent=self.root)
+
+    def _open_skill_tree(self):
+        if not self.engine.state:
+            messagebox.showinfo("Skill Tree", "Start a game first.", parent=self.root)
+            return
+        from game.ui.skill_tree_window import SkillTreeWindow
+        SkillTreeWindow(self.root, self.engine)
 
     def _open_codex(self):
         if not self.engine.state:
