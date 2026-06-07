@@ -6,7 +6,7 @@
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Version](https://img.shields.io/badge/version-3.1-brightgreen)
+![Version](https://img.shields.io/badge/version-3.1.1-brightgreen)
 
 ---
 
@@ -31,7 +31,7 @@ NEXUS: Zero Day is a desktop hacking simulation inspired by *Uplink*. Every miss
 | **Minigames** | Port Mapper · Cipher Decoder · Firewall Bypass |
 | **Codex** | 18 in-depth education entries with real-world breach case studies |
 | **Skill Tree** | 20 permanent upgrades across 5 branches — spend REP on real progression |
-| **Help system** | Tabbed in-game guide — Getting Started, Interface, Walkthrough, Commands, Skill Tree, Tips |
+| **Help system** | Tabbed in-game guide with full step-by-step walkthrough for the opening missions |
 | **Save / Load** | 3 save slots stored in `~/Documents/NEXUS_ZeroDay/saves/` |
 | **Fullscreen** | F11 to toggle, fully responsive layout |
 | **No dependencies** | Pure Python standard library + tkinter — nothing to install |
@@ -73,7 +73,8 @@ python3 nexus.py
 4. **Execute the exploit** — click EXECUTE EXPLOIT in the exploit window
 5. **Watch your trace** — type `bounce` to reduce trace generation by 70%
 6. **Read the Codex** — after each mission, learn the real technique behind what you did (+2 REP)
-7. **Save often** — SAVE button in the top bar, or type `save`
+7. **Spend REP on skills** — click SKILLS in the top bar to unlock permanent upgrades
+8. **Save often** — SAVE button in the top bar, or type `save`
 
 **F11** = fullscreen · **HELP** button = full in-game guide · **↑/↓** = command history · **Tab** = autocomplete
 
@@ -121,6 +122,24 @@ python3 nexus.py
 
 ---
 
+## Skill Tree
+
+Click the **SKILLS** button in the top bar to spend REP on permanent upgrades. Each branch has four tiers that unlock sequentially.
+
+| Branch | Theme | Sample Effects |
+|--------|-------|----------------|
+| **RECON** | Intelligence & reconnaissance | +10–25% scan/OSINT success, reveals targets earlier |
+| **EXPLOIT** | Offensive operations | +10–15% on all offensive exploits, +20–25% on buffer overflows / race conditions / zero-days |
+| **STEALTH** | Trace evasion & OPSEC | Lower trace generation, better bouncing (70% → 85% reduction), reduced failure penalty, passive trace decay |
+| **FORENSICS** | Defensive analysis | +15–30% on malware analysis and forensics work, Codex REP bonuses |
+| **RESOURCE** | Economy & meta | Credit grants (2,500–7,500), +25–50% REP per mission, +5s on minigame timers |
+
+**REP costs:** 15 → 30 → 55 → 90 per tier. Skills are permanent — no respec needed.
+
+**Strategy:** Stealth 1 (Quiet Footsteps) is the most cost-effective starting skill. Focus one branch fully before diversifying; Tier 4 effects are substantial. Resource 4 (NEXUS Operator) accelerates everything else.
+
+---
+
 ## Glossary
 
 Quick reference for cybersecurity terms used in the game. The full in-game **Codex** covers each topic in depth with real-world case studies.
@@ -152,7 +171,7 @@ Quick reference for cybersecurity terms used in the game. The full in-game **Cod
 | **LKM** | Loadable Kernel Module — code loaded into a running Linux kernel. Legitimate uses include device drivers; malicious uses include rootkits. |
 | **Man-in-the-Middle (MITM)** | Intercepting communications between two parties who believe they are talking directly to each other. |
 | **MITRE ATT&CK** | A framework cataloguing real-world attacker tactics and techniques, organised by attack phase. Used to map incidents and predict attacker behaviour. |
-| **Mutex** | A programming mechanism preventing a program running twice simultaneously. Malware uses mutex names as a fingerprint — lazarus_active_v4 identified the implant's origin. |
+| **Mutex** | A programming mechanism preventing a program running twice simultaneously. Malware uses mutex names as a fingerprint — `lazarus_active_v4` identified the implant's origin. |
 | **NDA** | Non-Disclosure Agreement — a legal contract requiring confidentiality. Used in the story to silence a whistleblower through legal threat. |
 | **Network Forensics** | Extracting legal-grade evidence from network traffic captures. Requires SHA-256 hashing every PCAP file and verifying timestamps against NTP logs for court admissibility. |
 | **OPSEC** | Operational Security — protecting information that could be used against you. Failures are almost always small and mundane: a timestamp, a reused username, a consistent timezone. |
@@ -183,13 +202,13 @@ nexus_zero_day/
 ├── nexus.spec                  PyInstaller build configuration
 ├── LAUNCH_NEXUS.bat            Windows launcher
 ├── launch_nexus.sh             macOS / Linux launcher
-├── GITHUB_SETUP.txt            GitHub Desktop publish guide
 ├── .github/
 │   └── workflows/
 │       └── build.yml           Auto-build Windows + macOS exe on tag push
 └── game/
     ├── engine.py               Game state, save/load, exploit logic
     ├── story.py                All narrative, missions, characters, Codex
+    ├── skill_tree.py           Skill tree data — branches, tiers, effects
     └── ui/
         ├── main_window.py      Main layout, terminal, commands
         ├── terminal.py         Terminal widget
@@ -208,17 +227,19 @@ nexus_zero_day/
 
 ## Changelog
 
+### v3.1.1
+- **Detailed opening walkthrough** — In response to player feedback that the first missions felt too hard, the MISSION WALKTHROUGH help tab now contains a full step-by-step guide covering all three Chapter 1 missions (Ghost in the Wire, Default Sins, Injection Season).
+- Every step now explains both **what to do** and **why it matters** in real cybersecurity practice, with real-world breach examples (Mirai, SQL injection in production, parameterised queries, APT vs smash-and-grab).
+- Added a General Tips section covering trace management, minigame strategy, Codex value, REP spending priorities, and how to recover from getting busted.
+
 ### v3.1
-- **Skill Tree progression system** — Spend REP on 20 permanent upgrades across 5 branches:
-  - **RECON** — Reconnaissance and intelligence bonuses
-  - **EXPLOIT** — Offensive operation success rate bonuses
-  - **STEALTH** — Trace reduction, bounce improvements, passive trace decay
-  - **FORENSICS** — Malware analysis and defensive operation bonuses
-  - **RESOURCE** — Credit grants, REP multipliers, minigame timer bonuses
+- **Skill Tree progression system** — 20 permanent upgrades across 5 branches (Recon, Exploit, Stealth, Forensics, Resource)
 - New **SKILLS** button in the top bar opens the visual skill tree
-- New help tab explaining the skill tree
-- Skill effects integrated into exploit success rates, trace generation, and REP rewards
-- Skills persist across saves and apply automatically
+- Tier-based unlocks (15 → 30 → 55 → 90 REP) with sequential prerequisites
+- Effects integrated into exploit success rates, trace generation, REP rewards, and minigame timers
+- Passive trace decay available via the Ghost Protocol skill (Stealth Tier 4)
+- New SKILL TREE help tab explaining the system and strategy
+- All skill state persists across saves
 
 ### v3.0
 - **New chapter** — Chapter 5: The Reckoning. Voss comes back. NEXUS becomes the target.
@@ -230,6 +251,7 @@ nexus_zero_day/
 ### v2.0
 - 2 new missions — Ghost in the Binary · Running the Specimen (malware reverse engineering)
 - 2 new Codex entries — Malware Static Analysis · Malware Dynamic Analysis
+- 2 new toolkit buttons — STATIC ANALY · DYNAMIC ANALY
 
 ### v1.0
 - Initial release — 12 missions, 12 Codex entries, 3 minigames, save/load, fullscreen, in-game help
@@ -244,12 +266,7 @@ cd nexus_zero_day
 python -m PyInstaller nexus.spec
 ```
 
-Or push a version tag and GitHub builds it automatically:
-
-```bash
-git tag v3.0
-git push origin v3.0
-```
+Output: `dist/NEXUS_ZeroDay.exe` (single-file Windows executable, no install required).
 
 ---
 
